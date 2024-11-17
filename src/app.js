@@ -2,12 +2,19 @@ const express = require('express');
 
 const app = express();
 
-app.use('/test', (req, res) => {
-    res.send('This API is testing for devTinder');
+app.get('/user', (req, res) => {
+    res.send({
+        firstName: 'Shubham',
+        lastname: 'Agarwal'
+    });
 });
 
-app.use('/profile', (req, res) => {
-    res.send('This API is user profile for devTinder!!');
+app.post('/user', (req, res) => {
+    res.send("User Data successfully added to the DB");
+});
+
+app.delete('/user', (req, res) => {
+    res.send("User Data successfully deleted from the DB");
 });
 
 app.use((req, res) => {
