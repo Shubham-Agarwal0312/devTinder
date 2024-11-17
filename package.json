@@ -1,0 +1,22 @@
+{
+  "name": "devtinder",
+  "version": "1.0.0",
+  "description": "app for developer community",
+  "main": "index.js",
+  "scripts": {
+    "start1": "node src/app.js",
+    "start2": "nodemon src/app.js"
+  },
+  "keywords": [
+    "MongoDB",
+    "Node.js",
+    "React.js",
+    "Express.js",
+    "Javascript"
+  ],
+  "author": "Shubham Agarwal",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1"
+  }
+}
