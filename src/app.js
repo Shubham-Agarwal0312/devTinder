@@ -1,21 +1,31 @@
 const express = require('express');
-const { adminAuth, userAuth } = require('./middlewares/auth');
+// const { adminAuth, userAuth } = require('./middlewares/auth');
 
 const app = express();
 
-app.use('/admin', adminAuth);
+app.get('/user', (req, res, next) => {
+    throw new Error(" some error ");
+    res.send('user data response');
+});
 
-app.use('/user', userAuth, (req, res) => {
-    res.send('user response 1');
-})
+app.use('/', (err, req, res, next) => {
+    console.log('err: ', err.message);
+    res.status(401).send('something went worng');
+});
 
-app.get('/admin/allData', (req, res) => {
-    res.send('admin response 1 all data');
-})
+// app.use('/admin', adminAuth);
 
-app.get('/admin/deleteData', (req, res) => {
-    res.send('admin response 1 delete data');
-})
+// app.use('/user', userAuth, (req, res) => {
+//     res.send('user response 1');
+// })
+
+// app.get('/admin/allData', (req, res) => {
+//     res.send('admin response 1 all data');
+// })
+
+// app.get('/admin/deleteData', (req, res) => {
+//     res.send('admin response 1 delete data');
+// })
 
 // app.get('/user', (req, res, next) => {
 //     console.log('Request Handler 1');
