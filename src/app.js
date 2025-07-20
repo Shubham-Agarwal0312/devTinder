@@ -9,10 +9,6 @@ const app = express();
 
 app.use(express.json())
 
-app.get('/user', (req, res) => {
-    res.send('get response properly');
-});
-
 app.post('/signup', async (req, res) => {
     const user = new User(req.body);
     try {
@@ -20,6 +16,33 @@ app.post('/signup', async (req, res) => {
         res.send('user added successfully');
     } catch(err) {
         res.send(404, 'Something went wrong');
+    }
+})
+
+app.get('/user', async (req, res) => {
+    const userEmailId = req.body.emailId;
+    try {
+        const user = await User.find({emailId: userEmailId});
+        if (user.length > 0) {
+            res.send(user);
+        } else {
+            res.send('user not found');
+        }
+    } catch(err) {
+        res.send(404, 'something went wrong');
+    }
+});
+
+app.get('/feed', async (req, res) => {
+    try {
+        const users = await User.find({});
+        if (users.length > 0) {
+            res.send(users);
+        } else {
+            res.send('No user available');
+        }
+    } catch(err) {
+        res.send(404, 'something went wrong');
     }
 })
 
