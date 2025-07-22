@@ -11,11 +11,13 @@ app.use(express.json())
 
 app.post('/signup', async (req, res) => {
     const user = new User(req.body);
+    console.log('user = ', user);
     try {
-        await user.save();
+        const newEntry = await user.save();
+        console.log('newEntry = ', newEntry);
         res.send('user added successfully');
     } catch(err) {
-        res.send(404, 'Something went wrong');
+        res.status(404).send('Something went wrong : ' + err.message);
     }
 })
 
@@ -65,7 +67,7 @@ app.patch('/user', async (req, res) => {
     const userData = req.body;
     const emailId = userData.emailId;
     try {
-        const oldUser = await User.findOneAndUpdate({"emailId": emailId}, userData, {returnDocument: "before"});
+        const oldUser = await User.findOneAndUpdate({"emailId": emailId}, userData, {returnDocument: "before", runValidators: true});
         console.log('oldUser = ', oldUser);
         res.send('User updated successfully');
     } catch(err) {
