@@ -11,7 +11,6 @@ app.use(express.json())
 
 app.post('/signup', async (req, res) => {
     const user = new User(req.body);
-    console.log('user = ', user);
     try {
         const newEntry = await user.save();
         console.log('newEntry = ', newEntry);
@@ -63,26 +62,42 @@ app.delete('/user', async (req, res) => {
     }
 })
 
-app.patch('/user', async (req, res) => {
-    const userData = req.body;
-    const emailId = userData.emailId;
-    try {
-        const oldUser = await User.findOneAndUpdate({"emailId": emailId}, userData, {returnDocument: "before", runValidators: true});
-        console.log('oldUser = ', oldUser);
-        res.send('User updated successfully');
-    } catch(err) {
-        res.send(404, 'Something went wrong');
-    }
-
+app.patch('/user/:userId', async (req, res) => {
     // const userData = req.body;
-    // const userId = userData.userId;
+    // const emailId = userData.emailId;
     // try {
-    //     const oldUser = await User.findByIdAndUpdate(userId, userData, {returnDocument: "before"});
+    //     const ALLOWED_UPDATE = ['photoURL', 'about', 'skills', 'age', 'gender'];
+    //     const isUpdateAllow = Object.keys(userData).every((k) => ALLOWED_UPDATE.includes(k));
+    //     if (!isUpdateAllow) {
+    //         throw new Error('Given fieldes not allowed to update');
+    //     }
+    //     const oldUser = await User.findOneAndUpdate({"emailId": emailId}, userData, {returnDocument: "before", runValidators: true});
     //     console.log('oldUser = ', oldUser);
     //     res.send('User updated successfully');
     // } catch(err) {
-    //     res.send(404, 'Something went wrong');
+    //     res.status(400).send('Update Failed: ' + err.message);
     // }
+
+    const userData = req.body;
+    const userId = req.params?.userId;
+    try {
+        if (userId === null) {
+            throw new Error('Please provide the user id');
+        }
+        const ALLOWED_UPDATE = ['photoURL', 'about', 'skills', 'age', 'gender'];
+        const isUpdateAllow = Object.keys(userData).every((k) => ALLOWED_UPDATE.includes(k));
+        if (!isUpdateAllow) {
+            throw new Error('Given fieldes not allowed to update');
+        }
+        if (userData.skills.length > 0) {
+            throw new Error('skills should not more than 10');
+        }
+        const oldUser = await User.findByIdAndUpdate(userId, userData, {returnDocument: "before"});
+        console.log('oldUser = ', oldUser);
+        res.send('User updated successfully');
+    } catch(err) {
+        res.status(400).send('Update Failed: ' + err.message);
+    }
     
 })
 
