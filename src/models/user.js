@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const {Schema} = mongoose;
 
@@ -17,10 +18,20 @@ const userSchema = new Schema({
         unique: true,
         lowercase: true,
         trim: true,
+        validate(value) {
+            if (!validator.isEmail(value)) {
+                throw new Error('Provided email not valid');
+            }
+        }
     },
     password: {
         type: String,
-        minLength: 4,
+        minLength: 8,
+        validate(value) {
+            if (!validator.isStrongPassword(value)) {
+                throw new Error("Password is not strong enough");
+            }
+        }
     },
     age: {
         type: Number,
@@ -40,6 +51,11 @@ const userSchema = new Schema({
     photoURL: {
         type: String,
         default: "https://ongcvidesh.com/wp-content/uploads/2019/08/dummy-image.jpg",
+        validate(value) {
+            if (!validator.isURL(value)) {
+                throw new Error('Photo URL is not proper');
+            }
+        }
     },
     about: {
         type: String,
