@@ -1,8 +1,10 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 // const { adminAuth, userAuth } = require('./middlewares/auth');
 
 const connectDb = require('./config/database');
 const User = require('./models/user');
+const {validateUser} = require('./utils/validate');
 
 
 const app = express();
@@ -10,13 +12,41 @@ const app = express();
 app.use(express.json())
 
 app.post('/signup', async (req, res) => {
-    const user = new User(req.body);
+    
     try {
-        const newEntry = await user.save();
-        console.log('newEntry = ', newEntry);
+        validateUser(req);
+        const {firstName, lastName, emailId, password} = req.body;
+
+        const passwordHash = await bcrypt.hash(password, 10);
+        const user = new User({
+            firstName,
+            lastName,
+            emailId,
+            password: passwordHash,
+        });
+        await user.save();
         res.send('user added successfully');
     } catch(err) {
         res.status(404).send('Something went wrong : ' + err.message);
+    }
+})
+
+app.post('/login', async (req, res) => {
+    try {
+        const {emailId, password} = req.body;
+        const userList = await User.find({emailId});
+        if (!userList.length) {
+            throw new Error("Email not exist in DB");
+        }
+        const isPasswordMatch = await bcrypt.compare(password, userList[0].password);
+        if (isPasswordMatch) {
+            res.send('logged in successfully');
+        } else {
+            throw new Error("Password not matched");
+        }
+        
+    } catch(err) {
+        res.status(400).send('Error: ' + err.message);
     }
 })
 
