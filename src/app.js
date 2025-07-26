@@ -1,5 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 // const { adminAuth, userAuth } = require('./middlewares/auth');
 
 const connectDb = require('./config/database');
@@ -10,6 +12,7 @@ const {validateUser} = require('./utils/validate');
 const app = express();
 
 app.use(express.json())
+app.use(cookieParser());
 
 app.post('/signup', async (req, res) => {
     
@@ -39,15 +42,32 @@ app.post('/login', async (req, res) => {
             throw new Error("Email not exist in DB");
         }
         const isPasswordMatch = await bcrypt.compare(password, userList[0].password);
-        if (isPasswordMatch) {
-            res.send('logged in successfully');
-        } else {
+        if (!isPasswordMatch) {
             throw new Error("Password not matched");
         }
+        const token = await jwt.sign({_id: userList[0]._id}, "Shubham@1994");
+        res.cookie("token", token);
+        res.send("logged in successfully");
         
     } catch(err) {
         res.status(400).send('Error: ' + err.message);
     }
+})
+
+app.get('/profile', async (req, res) => {
+    try {
+        const {token} = req.cookies;
+        if (!token) {
+            throw new Error('Token not valid');
+        }
+        const decoded = await jwt.verify(token, "Shubham@1994");
+        const {_id} = decoded;
+        const user = await User.findById(_id);
+        res.send(user);
+    } catch(err) {
+        res.status(400).send('Error: ' + err.message)
+    }
+    
 })
 
 app.get('/user', async (req, res) => {
