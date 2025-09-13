@@ -1,8 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken');
-// const { adminAuth, userAuth } = require('./middlewares/auth');
+const { userAuth } = require('./middlewares/auth');
 
 const connectDb = require('./config/database');
 const User = require('./models/user');
@@ -41,12 +40,14 @@ app.post('/login', async (req, res) => {
         if (!userList.length) {
             throw new Error("Email not exist in DB");
         }
-        const isPasswordMatch = await bcrypt.compare(password, userList[0].password);
+        const user = userList[0];
+        const isPasswordMatch = await user.validatePassword(password);
         if (!isPasswordMatch) {
             throw new Error("Password not matched");
         }
-        const token = await jwt.sign({_id: userList[0]._id}, "Shubham@1994");
-        res.cookie("token", token);
+        const token = await user.getJWT();
+        console.log('app token = ', token);
+        res.cookie("token", token, {expires: new Date(Date.now() + 8 * 3600000)});
         res.send("logged in successfully");
         
     } catch(err) {
@@ -54,20 +55,19 @@ app.post('/login', async (req, res) => {
     }
 })
 
-app.get('/profile', async (req, res) => {
+app.get('/profile', userAuth, async (req, res) => {
     try {
-        const {token} = req.cookies;
-        if (!token) {
-            throw new Error('Token not valid');
-        }
-        const decoded = await jwt.verify(token, "Shubham@1994");
-        const {_id} = decoded;
-        const user = await User.findById(_id);
+        const user = req.user;
         res.send(user);
     } catch(err) {
         res.status(400).send('Error: ' + err.message)
     }
     
+})
+
+app.get('/sendConnectionRequest', userAuth, async (req, res) => {
+    const user = req.user;
+    res.send(user.firstName + ' send connection Request');
 })
 
 app.get('/user', async (req, res) => {
