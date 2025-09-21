@@ -13,4 +13,15 @@ const validateUser = (req) => {
     }
 }
 
-module.exports = {validateUser};
+const validateEditFields = (req) => {
+    const requestedEditFields = req.body;
+    const possibleEditFields = ['firstName', 'lastName', 'age', 'about', 'gender', 'photoURL', 'skills'];
+
+    const isValid = Object.keys(requestedEditFields).every((key) => possibleEditFields.includes(key));
+
+    if (!isValid) {
+        throw new Error('Edit Fields are not valid');
+    }
+}
+
+module.exports = {validateUser, validateEditFields};
