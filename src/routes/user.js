@@ -1,6 +1,52 @@
 const express = require('express');
 const userRouter = express.Router();
 const User = require('../models/user');
+const { userAuth } = require('../middlewares/auth');
+const ConnectionRequest = require('../models/connectionRequest');
+
+const USER_SAFE_DATA = 'firstName lastName age gender skills';
+
+userRouter.get('/user/request/received', userAuth, async (req, res) => {
+    try {
+        const loggedInUser = req.user;
+        const receiveRequests = await ConnectionRequest.find({
+            toUserId: loggedInUser._id,
+            status: "interested",
+        }).populate('fromUserId', USER_SAFE_DATA);
+
+        res.send(receiveRequests);
+    }
+    catch (error) {
+        res.send(400, 'Error: ' + error.message);
+    }
+});
+
+userRouter.get('/user/connections', userAuth, async (req, res) => {
+    try {
+        const loggedInUser = req.user;
+
+        const connectionList = await ConnectionRequest.find({
+            $or: [
+                {fromUserId: loggedInUser._id, status: 'accepted'},
+                {toUserId: loggedInUser._id, status: 'accepted'}
+            ]
+        }).populate('fromUserId', USER_SAFE_DATA).populate('toUserId', USER_SAFE_DATA);
+
+        const data = connectionList.map((connection) => {
+            if (connection.fromUserId._id.equals(loggedInUser._id)) {
+                return connection.toUserId;
+            }
+            return connection.fromUserId;
+        })
+        res.json({
+            message: 'all connections',
+            data
+        });
+    }
+    catch (error) {
+        res.send(400, 'Error : ' + error.message);
+    }
+})
 
 userRouter.get('/user', async (req, res) => {
     const userEmailId = req.body.emailId;
