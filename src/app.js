@@ -2,8 +2,6 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const connectDb = require('./config/database');
 
-
-
 const app = express();
 
 app.use(express.json());
@@ -19,15 +17,16 @@ app.use('/', profileRouter);
 app.use('/', requestRouter);
 app.use('/', userRouter);
 
-
-connectDb().then(() => {
+connectDb()
+  .then(() => {
     console.log('DB is connected successfully');
     app.listen(7777, () => {
-        console.log('server started successfully on port 7777');
+      console.log('server started successfully on port 7777');
     });
-}).catch((err) => {
-    console.error("connection not established error = ", err);
-}).finally(() => {
+  })
+  .catch(err => {
+    console.error('connection not established error = ', err);
+  })
+  .finally(() => {
     console.log('final statement');
-})
-
+  });
