@@ -16,8 +16,10 @@ authRouter.post('/signup', async (req, res) => {
       emailId,
       password: passwordHash,
     });
-    await user.save();
-    res.send('user added successfully');
+    const newUser = await user.save();
+    const token = await newUser.getJWT();
+    res.cookie('token', token, { expires: new Date(Date.now() + 8 * 3600000) });
+    res.json({ message: 'user added successfully', data: newUser });
   } catch (err) {
     res.status(404).send('Something went wrong : ' + err.message);
   }
@@ -37,7 +39,10 @@ authRouter.post('/login', async (req, res) => {
     }
     const token = await user.getJWT();
     res.cookie('token', token, { expires: new Date(Date.now() + 8 * 3600000) });
-    res.send(user.firstName + ' logged in successfully');
+    res.json({
+      message: user.firstName + ' logged in successfully',
+      data: user,
+    });
   } catch (err) {
     res.status(400).send('Error: ' + err.message);
   }
